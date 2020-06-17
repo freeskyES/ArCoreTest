@@ -1,16 +1,14 @@
-package com.es.arcoretest
+package com.es.arcoretest.node
 
 import android.content.Context
 import android.util.Log
-import android.util.Size
 import android.widget.ImageView
+import com.es.arcoretest.R
 import com.google.ar.core.AugmentedFace
 import com.google.ar.sceneform.FrameTime
 import com.google.ar.sceneform.Node
-import com.google.ar.sceneform.math.Quaternion
 import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.rendering.DpToMetersViewSizer
-import com.google.ar.sceneform.rendering.FixedWidthViewSizer
 import com.google.ar.sceneform.rendering.ViewRenderable
 import com.google.ar.sceneform.ux.AugmentedFaceNode
 
@@ -49,7 +47,7 @@ class CustomFaceNode(augmentedFace: AugmentedFace?,
                 uiRenderable.isShadowReceiver = false
                 chinNode?.renderable = uiRenderable
 
-                uiRenderable.view.findViewById<ImageView>(R.id.clothes_image).let {clothes ->
+                uiRenderable.view.findViewById<ImageView>(R.id.clothes_image).let { clothes ->
                     imageView = clothes
                     clothes.setOnClickListener {}
                     clothes.setImageResource(R.drawable.clothes)

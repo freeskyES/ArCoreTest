@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.es.arcoretest.node.CustomFaceNode
 import com.google.ar.core.ArCoreApk
 import com.google.ar.core.AugmentedFace
 import com.google.ar.core.TrackingState
@@ -40,7 +41,8 @@ class MainActivity : AppCompatActivity() {
                 ?.getAllTrackables(AugmentedFace::class.java)?.let {
                     for (face in it) {
                         if (!faceNodeMap.containsKey(face)) {
-                            val faceNode = CustomFaceNode(face, this)
+                            val faceNode =
+                                CustomFaceNode(face, this)
                             faceNode.setParent(scene)
                             faceNodeMap[face] = faceNode
                         }

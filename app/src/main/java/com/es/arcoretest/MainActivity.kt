@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.es.arcoretest.manager.ClothesManager
 import com.es.arcoretest.node.CustomFaceNode
 import com.google.ar.core.ArCoreApk
 import com.google.ar.core.AugmentedFace
@@ -17,6 +18,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 class MainActivity : AppCompatActivity() {
 
     var faceNodeMap = HashMap<AugmentedFace, CustomFaceNode>()
+    val viewModel = MainViewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,6 +62,9 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
         }
+
+        viewModel.setupClothesManager(ClothesManager(this))
+        viewModel.setupClothes()
     }
 
     private fun checkIsSupportedDeviceOrFinish() : Boolean {

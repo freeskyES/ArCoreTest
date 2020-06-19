@@ -95,7 +95,7 @@ class CustomFaceNode(augmentedFace: AugmentedFace?,
         super.onUpdate(frameTime)
         augmentedFace?.let {face ->
             getRegionPose(FaceRegion.CHIN)?.let {
-                Log.i("onupdate", "size : $it")
+//                Log.i("onupdate", "size : $it")
                 calculateFaceSize(face)
 //                val width = imageView?.width?.toFloat()
 //                val height = imageView?.height?.toFloat()
@@ -112,12 +112,12 @@ class CustomFaceNode(augmentedFace: AugmentedFace?,
 
         val left = face.getRegionPose(AugmentedFace.RegionType.FOREHEAD_LEFT)
         val right = face.getRegionPose(AugmentedFace.RegionType.FOREHEAD_RIGHT)
-        Log.i("calculateFaceSize", "left/right $left/$right size ${right.tx() - left.tx()}")
+//        Log.i("calculateFaceSize", "left/right $left/$right size ${right.tx() - left.tx()}")
 
         val realLeft = getRegionPose(FaceRegion.FACE_LEFT)
         val realRight = getRegionPose(FaceRegion.FACE_RIGHT)
         val realSize = (realRight?.x ?:0f) - (realLeft?.x ?:0f)
-        Log.i("calculateFaceSize", "realLeft/realRight ${realLeft}/$realRight size $realSize")
+//        Log.i("calculateFaceSize", "realLeft/realRight ${realLeft}/$realRight size $realSize")
 
         return realSize
     }

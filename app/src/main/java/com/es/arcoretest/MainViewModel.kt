@@ -1,5 +1,8 @@
 package com.es.arcoretest
 
+import android.graphics.Bitmap
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.es.arcoretest.manager.ClothesManager
@@ -9,6 +12,9 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class MainViewModel : ViewModel() {
+
+    private val _processedImage = MutableLiveData<Bitmap>()
+    val processedImage: LiveData<Bitmap> = _processedImage
 
     private lateinit var clothesManager: ClothesManager
 
@@ -21,9 +27,12 @@ class MainViewModel : ViewModel() {
             viewModelScope.launch {
                 val result = async { clothesManager.processImage() }.await()
 
+                _processedImage.value = result
                 Timber.i("result !")
             }
         }
     }
+
+
 
 }

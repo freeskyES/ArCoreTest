@@ -1,12 +1,17 @@
 package com.es.arcoretest.manager
 
 import android.content.Context
-import android.graphics.Bitmap
+import android.graphics.*
+import android.util.Size
 import androidx.core.graphics.drawable.toBitmap
 import com.es.arcoretest.R
+import com.es.arcoretest.segmentation.ImageSegmentationModelExecutor
+import com.es.arcoretest.util.BitmapUtils
+import com.es.arcoretest.util.ImageAntiAliasing
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.face.FirebaseVisionFace
+import com.google.firebase.ml.vision.face.FirebaseVisionFaceContour
 import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions
 import kotlinx.coroutines.coroutineScope
 import timber.log.Timber
@@ -16,11 +21,13 @@ import kotlin.coroutines.suspendCoroutine
 
 class ClothesManager(context: Context) {
 
+    private var imageSegmentationModel: ImageSegmentationModelExecutor = ImageSegmentationModelExecutor(context)
+
     lateinit var clothesBitmap: Bitmap
     private val options =
         FirebaseVisionFaceDetectorOptions.Builder()
             .setPerformanceMode(FirebaseVisionFaceDetectorOptions.FAST)
-//                .setContourMode(FirebaseVisionFaceDetectorOptions.ALL_CONTOURS)
+                .setContourMode(FirebaseVisionFaceDetectorOptions.ALL_CONTOURS)
             .setMinFaceSize(0f)
             .build()
 
@@ -35,18 +42,54 @@ class ClothesManager(context: Context) {
     }
 
     suspend fun processImage(): Bitmap = coroutineScope {
-        detectFace(clothesBitmap).let {faces ->
-            // 성공 & 얼굴 정보 얻기
-            Timber.i("detectFace result $faces")
+        try {
+            detectFace(clothesBitmap).let {faces ->
+                // 성공 & 얼굴 정보 얻기
+                Timber.i("detectFace result $faces")
 
-            getFaceContourInfo(faces).let {faceInfo ->
-                val editedImage = editClothesImage(clothesBitmap/*resizeMask*//*resizedBitmap*/, faceInfo)
+                getFaceContourInfo(faces).let {faceInfo ->
 
-                Timber.i("end")
-                return@coroutineScope editedImage
+                    val result = imageSegmentationModel.execute(clothesBitmap)
+
+                    ImageAntiAliasing.antiAliasing(result)
+
+                    val resizeMask = BitmapUtils.resizeImage(Size(clothesBitmap.width, clothesBitmap.height), result)
+                    val removedBg = splitBg(resizeMask, clothesBitmap)
+
+                    val editedImage = editClothesImage(removedBg, faceInfo)
+
+                    Timber.i("end")
+                    return@coroutineScope editedImage
+                }
+
             }
-
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return@coroutineScope clothesBitmap
         }
+    }
+
+    private fun splitBg(markedImage: Bitmap, originImage: Bitmap): Bitmap {
+
+        val resultingImage = Bitmap.createBitmap(originImage.width,
+            originImage.height, Bitmap.Config.ARGB_8888
+        )
+
+        val canvas = Canvas(resultingImage)
+        canvas.drawARGB(0, 0, 0, 0)
+
+        val paint = Paint().apply {
+            isAntiAlias = true // 경계선을 부드럽게 해주는 플래그
+            isDither = true
+        }
+
+        val rect = Rect(0, 0, originImage.width, originImage.height)
+        canvas.drawBitmap(markedImage, rect, rect, paint)
+
+        paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+        canvas.drawBitmap(originImage, rect, rect, paint)
+
+        return resultingImage
     }
 
     private fun editClothesImage(
@@ -84,7 +127,11 @@ class ClothesManager(context: Context) {
                 val right = x + xOffset
                 val bottom = y + yOffset
 
-                var chinBottomPos = FaceContourData(x, bottom)
+                val landmarks = face.getContour(FirebaseVisionFaceContour.FACE)
+                val chinPoint = landmarks.points[18]
+                val chinBottomPos = FaceContourData(chinPoint.x, chinPoint.y)
+
+//                var chinBottomPos = FaceContourData(x, bottom)
 
                 FaceDetectInfo(left, top, right-left, bottom-top, x, y, chinBottomPos).run {
                     Timber.i("$this")

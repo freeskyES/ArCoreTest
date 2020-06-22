@@ -25,6 +25,8 @@ class MainActivity : AppCompatActivity() {
         if (!checkIsSupportedDeviceOrFinish()) {
             return
         }
+        viewModel.setupClothesManager(ClothesManager(this))
+        viewModel.setupClothes()
 
         setContentView(R.layout.activity_main)
         val arFragment = face_fragment as FaceFragment
@@ -43,10 +45,12 @@ class MainActivity : AppCompatActivity() {
                 ?.getAllTrackables(AugmentedFace::class.java)?.let {
                     for (face in it) {
                         if (!faceNodeMap.containsKey(face)) {
-                            val faceNode =
-                                CustomFaceNode(face, this)
-                            faceNode.setParent(scene)
-                            faceNodeMap[face] = faceNode
+                            viewModel.processedImage.value?.let {resultImage ->
+                                val faceNode =
+                                    CustomFaceNode(face, resultImage, this)
+                                faceNode.setParent(scene)
+                                faceNodeMap[face] = faceNode
+                            }
                         }
                     }
                     // Remove any AugmentedFaceNodes associated with an AugmentedFace that stopped tracking.
@@ -63,8 +67,7 @@ class MainActivity : AppCompatActivity() {
                 }
         }
 
-        viewModel.setupClothesManager(ClothesManager(this))
-        viewModel.setupClothes()
+
     }
 
     private fun checkIsSupportedDeviceOrFinish() : Boolean {

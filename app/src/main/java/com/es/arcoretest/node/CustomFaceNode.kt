@@ -1,9 +1,9 @@
 package com.es.arcoretest.node
 
 import android.content.Context
-import android.util.Log
 import android.widget.ImageView
 import com.es.arcoretest.R
+import com.es.arcoretest.model.ResultImage
 import com.google.ar.core.AugmentedFace
 import com.google.ar.sceneform.FrameTime
 import com.google.ar.sceneform.Node
@@ -11,9 +11,12 @@ import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.rendering.DpToMetersViewSizer
 import com.google.ar.sceneform.rendering.ViewRenderable
 import com.google.ar.sceneform.ux.AugmentedFaceNode
+import timber.log.Timber
 
-class CustomFaceNode(augmentedFace: AugmentedFace?,
-                 val context: Context
+class CustomFaceNode(
+    augmentedFace: AugmentedFace?,
+    val resultImage: ResultImage,
+    val context: Context
 ): AugmentedFaceNode(augmentedFace) {
 
     private var chinNode: Node? = null
@@ -33,6 +36,7 @@ class CustomFaceNode(augmentedFace: AugmentedFace?,
 
     override fun onActivate() {
         super.onActivate()
+        Timber.i("onActivate")
         chinNode = Node()
         chinNode?.setParent(this)
 
@@ -50,7 +54,8 @@ class CustomFaceNode(augmentedFace: AugmentedFace?,
                 uiRenderable.view.findViewById<ImageView>(R.id.clothes_image).let { clothes ->
                     imageView = clothes
                     clothes.setOnClickListener {}
-                    clothes.setImageResource(R.drawable.clothes)
+                    clothes.setImageBitmap(resultImage.image)
+//                    clothes.setImageResource(R.drawable.clothes)
                 }
 
             }
@@ -93,6 +98,7 @@ class CustomFaceNode(augmentedFace: AugmentedFace?,
 
     override fun onUpdate(frameTime: FrameTime?) {
         super.onUpdate(frameTime)
+
         augmentedFace?.let {face ->
             getRegionPose(FaceRegion.CHIN)?.let {
 //                Log.i("onupdate", "size : $it")

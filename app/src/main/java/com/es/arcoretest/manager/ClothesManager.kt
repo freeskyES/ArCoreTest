@@ -5,6 +5,7 @@ import android.graphics.*
 import android.util.Size
 import androidx.core.graphics.drawable.toBitmap
 import com.es.arcoretest.R
+import com.es.arcoretest.model.ResultImage
 import com.es.arcoretest.segmentation.ImageSegmentationModelExecutor
 import com.es.arcoretest.util.BitmapUtils
 import com.es.arcoretest.util.ImageAntiAliasing
@@ -41,7 +42,7 @@ class ClothesManager(context: Context) {
         }
     }
 
-    suspend fun processImage(): Bitmap = coroutineScope {
+    suspend fun processImage(): ResultImage? = coroutineScope {
         try {
             detectFace(clothesBitmap).let {faces ->
                 // 성공 & 얼굴 정보 얻기
@@ -59,13 +60,13 @@ class ClothesManager(context: Context) {
                     val editedImage = editClothesImage(removedBg, faceInfo)
 
                     Timber.i("end")
-                    return@coroutineScope editedImage
+                    return@coroutineScope ResultImage(editedImage, ResultImage.FaceInfo(faceInfo.rectWidth, ResultImage.Point(faceInfo.chinBottomPos.px, faceInfo.chinBottomPos.py)))
                 }
 
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            return@coroutineScope clothesBitmap
+            return@coroutineScope null
         }
     }
 
